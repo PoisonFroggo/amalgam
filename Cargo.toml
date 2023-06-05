@@ -1,0 +1,69 @@
+[package]
+name = "rustcycles"
+version = "0.0.0"
+edition = "2021"
+rust-version = "1.56"
+resolver = "2"
+authors = ["Martin Taibr <taibr.martin@gmail.com> (made RustCycles, base for game)"]
+
+[workspace]
+members = ["editor", "executor", "executor-wasm", "game"]
+
+[profile.dev]
+# Abort on panic might be a better default: https://vorner.github.io/2018/07/22/dont_panic.html
+# This makes backtraces useless, see .cargo/config-example.toml for a fix.
+# It also means that tests need a separate build of all deps because they use unwinding,
+# though at least cargo build and test can coexist so alternating between them won't cause a full build each time.
+# Seems to have no impact on incremental compile times.
+# Keep "unwind" in debug mode so we can use tests more easily.
+#panic = "abort"
+opt-level = 1 # Can be changed without recompiling all deps
+
+[profile.dev.package."*"]
+# Optimize deps but not this crate itself (tip from macroquad).
+# This seems to slightly improve performance (e.g. loading a model goes from 1.4 s to 0.2 s)
+# and shouldn't meaningfully increase incremental compile times because deps only change rarely.
+opt-level = 3
+codegen-units = 1
+debug = false
+
+[profile.release]
+# Using "abort" in release mode might be better because otherwise the program can get stuck
+# if we use threads wrong and crashing is slightly better than getting stuck.
+panic = "abort"
+
+# https://doc.rust-lang.org/cargo/reference/profiles.html#build-dependencies
+# The reference might be wrong - it says this affects proc macros but in my experience it doesn't.
+# No effect so far because we don't use and build deps yet.
+[profile.dev.build-override]
+opt-level = 3
+codegen-units = 1
+
+[profile.release.build-override]
+opt-level = 3
+codegen-units = 1
+
+[dependencies]
+bincode = "1.3.3"
+cvars = "0.3.2"
+cvars-console-fyrox = "0.1.0"
+fxhash = "0.2.1"
+fyrox = "0.29.0"
+inline_tweak = "1.0.9"
+rand = { version = "0.8.5", default-features = false }
+rand_distr = { version = "0.4.3", default-features = false }
+rand_xoshiro = "0.6.0"
+serde = { version = "1.0.162", features = ["derive"] }
+strum = "0.24.0"
+strum_macros = "0.24.3"
+
+[patch.crates-io]
+#cvars = { path = "../cvars/cvars" }
+#cvars-console-fyrox = { path = "../cvars/cvars-console-fyrox" }
+#fyrox = { git = "https://github.com/FyroxEngine/Fyrox", rev = "2537fc1bf5a03dd55c0a2e54bc14a5458d45e724" }
+#fyrox = { git = "https://github.com/martin-t/Fyrox", rev = "6fcc4d0cc261611428333aea4fcf1e551812375b" }
+#fyrox = { path = "../Fyrox" }
+# Might need to override fyrox-ui as well so that cvars-console-fyrox uses the same version.
+#fyrox-ui = { git = "https://github.com/FyroxEngine/Fyrox", rev = "2537fc1bf5a03dd55c0a2e54bc14a5458d45e724" }
+#fyrox-ui = { git = "https://github.com/martin-t/Fyrox", rev = "6fcc4d0cc261611428333aea4fcf1e551812375b" }
+#fyrox-ui = { path = "../Fyrox/fyrox-ui" }

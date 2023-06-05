@@ -1,0 +1,9 @@
+Ignore errors in executor-wasm files, these are platform specific and not relevant to this project
+
+Fyrox commands:
+
+Check fyrox API docs via going to Fyrox and type `cargo doc --open'
+
+cargo run --package editor --release - launches the editor with your game attached. The editor allows you to run your game from it and edit its game entities. It is intended to be used only for development.
+
+cargo run --package executor --release - creates and runs the production binary of your game, which can be shipped (for example - to a store).
